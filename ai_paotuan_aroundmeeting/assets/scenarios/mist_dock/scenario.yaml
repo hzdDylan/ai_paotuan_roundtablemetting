@@ -1,0 +1,362 @@
+# 《雾码头》· 三幕分支版
+# 说明：剧本不写目标值；检定目标 = 角色技能值（D-05）。
+# 流程：码头 → 货栈 / 后巷 / 货舱 → 轮机舱 / 稽查室 → 船头对峙 → 三种结局。
+id: mist_dock
+version: 0.1.0
+title: 雾码头
+subtitle: 1935 · 上海十六铺 · 悬疑 / 犯罪
+minutes: 25-35
+rating: 16+
+party_max: 4
+opening: |
+  1935 年深秋，十六铺码头。雾从黄浦江上压过来，货灯只剩一圈黄。
+  跳板尽头停着一艘没熄灯的货船，提货单上的收货人一栏空着。
+  搬运工蹲在货堆旁，没有人往船上看。
+
+content_scope:
+  era: 1935 年秋 · 上海十六铺码头
+  genre: 悬疑 / 犯罪 / 黑色电影
+  rating: 16+
+  allowed: [谈判, 试探, 欺骗, 潜入, 威胁, 有限的暴力]
+  forbidden: [性内容, 未成年人伤害, 虐待细节, 真实人物影射, 现代科技, 出戏元话语]
+  intent: 玩家应在剧本的时空与题材内行事
+
+cast:
+  - id: human
+    kind: human
+    name: Joe
+    goal: 查清提货单背后失踪的人
+    tags: [话术, 侦查, 记者]
+  - id: bp_suqin
+    kind: bp
+    name: 苏琴
+    goal: 找到失踪的哥哥
+    secret: 她哥哥是走私船的账房
+    tags: [执拗, 水性好, 隐瞒]
+    quip: 我哥要是会游泳，这江早就把他送回来了。
+    switch_trigger: 有人拿她哥哥的命做筹码，她会立刻翻脸。
+  - id: bp_ma
+    kind: bp
+    name: 老马
+    goal: 把货脱手后离开上海
+    secret: 他收了钱，把人骗上了船
+    tags: [老江湖, 贪生, 讲规矩]
+    quip: 上海滩的雾，专收不该上岸的人。
+    switch_trigger: 只要价码够高或船要开，他会改口。
+
+npcs:
+  - id: npc_lin
+    name: 林稽查
+    goal: 查扣走私货，顺便找一个替罪羊
+    secret: 他与走私船有分成
+    tags: [冷硬, 精明]
+
+scenes:
+  - id: dock
+    name: 码头
+    goal: 找到失踪者留下的线索，混上货船
+    clocks:
+      - id: tide
+        label: 涨潮
+        max: 5
+        on_zero: cargo_hold
+    clues:
+      - id: clue_torn_manifest
+        text: 提货单被撕掉的那一角还粘在货箱上
+      - id: clue_blood_rope
+        text: 缆绳上有一道暗红的擦痕
+      - id: clue_whistle
+        text: 雾里有人吹了一声两短一长的口哨
+    exits:
+      - id: board
+        to: cargo_hold
+        when: 'flag:boarded'
+      - id: warehouse
+        to: warehouse
+        when: 'clue:clue_torn_manifest'
+      - id: follow
+        to: alley
+        when: 'flag:follow_witness'
+      - id: walk
+        to: alley
+        when: 'always'
+      - id: tide_turns
+        to: cargo_hold
+        when: 'clock_zero:tide'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看见货箱上的湿印，还能再靠近一点
+      - skill: 聆听
+        difficulty: regular
+        stakes: 口哨声断了，但雾里还有人
+      - skill: 潜行
+        difficulty: regular
+        stakes: 你踩响一块跳板，搬运工回头看了一眼
+      - skill: 话术
+        difficulty: regular
+        stakes: 搬运工不肯多说，但没去叫稽查
+
+  - id: warehouse
+    name: 货栈
+    goal: 找到被掉包的货与失踪者的踪迹
+    clocks:
+      - id: watchman
+        label: 巡夜人
+        max: 4
+        on_zero: alley
+    clues:
+      - id: clue_empty_crate
+        text: 一只标着「瓷器」的箱子轻得反常
+      - id: clue_ledger_page
+        text: 地上有半页被踩脏的货运账
+      - id: clue_oil_stain
+        text: 油布下压着一枚稽查处的铜扣
+    exits:
+      - id: to_ship
+        to: cargo_hold
+        when: 'flag:boarded || clue:clue_ledger_page'
+      - id: to_alley
+        to: alley
+        when: 'always'
+      - id: to_office
+        to: watcher_office
+        when: 'flag:lin_noticed'
+      - id: watchman_comes
+        to: alley
+        when: 'clock_zero:watchman'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只翻到空箱，但巡夜人的脚步还远
+      - skill: 妙手
+        difficulty: regular
+        stakes: 锁没开，箱盖却响了一声
+      - skill: 潜行
+        difficulty: regular
+        stakes: 你躲进阴影，但退路被货箱堵住
+      - skill: 图书馆
+        difficulty: regular
+        stakes: 你认出账页格式，却找不到对应的船
+
+  - id: alley
+    name: 后巷
+    goal: 从目击者口中问出谁最后一个见过失踪者
+    clocks:
+      - id: rain
+        label: 冷雨
+        max: 4
+        on_zero: cargo_hold
+    clues:
+      - id: clue_witness
+        text: 卖烟小孩看见有人被扶上船，脚没有沾地
+      - id: clue_silver_button
+        text: 墙根有一枚稽查处的银扣
+      - id: clue_cart_track
+        text: 车辙从货栈一直延伸到跳板
+    exits:
+      - id: board
+        to: cargo_hold
+        when: 'flag:boarded'
+      - id: office
+        to: watcher_office
+        when: 'flag:lin_noticed'
+      - id: back_dock
+        to: dock
+        when: 'always'
+      - id: rain_forces
+        to: cargo_hold
+        when: 'clock_zero:rain'
+    checks:
+      - skill: 话术
+        difficulty: regular
+        stakes: 小孩收了钱却只说一半，还能再问
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你看得出他在怕，但不知道他怕谁
+      - skill: 聆听
+        difficulty: regular
+        stakes: 你听见巷口有皮鞋声，但没看见人
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只找到一枚扣子，没找到它的主人
+
+  - id: cargo_hold
+    name: 货舱
+    goal: 在船离港前找到失踪者或能定罪的证据
+    clocks:
+      - id: steam
+        label: 锅炉压力
+        max: 4
+        on_zero: confrontation
+    clues:
+      - id: clue_hidden_man
+        text: 煤堆后面有人用指甲敲了三下船板
+      - id: clue_real_manifest
+        text: 真正的舱单上多了一个不在名单上的人
+      - id: clue_lin_seal
+        text: 一份分成字据上有林稽查的私章
+    exits:
+      - id: engine
+        to: engine_room
+        when: 'flag:engine_route'
+      - id: confront
+        to: confrontation
+        when: 'clue:clue_hidden_man'
+      - id: deck
+        to: dock
+        when: 'always'
+      - id: pressure
+        to: confrontation
+        when: 'clock_zero:steam'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看见煤堆动了一下，还能再靠近
+      - skill: 聆听
+        difficulty: regular
+        stakes: 敲击声停了，但船板下面还有呼吸
+      - skill: 妙手
+        difficulty: hard
+        stakes: 锁没撬开，反而在手上留了一道口子
+      - skill: 话术
+        difficulty: regular
+        stakes: 里面的人不信你，但也没喊人
+
+  - id: engine_room
+    name: 轮机舱
+    goal: 让船停下，或拿到航行日志
+    clocks:
+      - id: boiler
+        label: 锅炉
+        max: 4
+        on_zero: confrontation
+    clues:
+      - id: clue_logbook
+        text: 航行日志记着凌晨多停了一次船
+      - id: clue_coal_dust
+        text: 炉膛边有半枚湿脚印，尺码很小
+      - id: clue_knife
+        text: 工具架上少了一把割缆刀
+    exits:
+      - id: confront
+        to: confrontation
+        when: 'clue:clue_logbook || flag:engine_fixed'
+      - id: back_hold
+        to: cargo_hold
+        when: 'always'
+      - id: blow
+        to: confrontation
+        when: 'clock_zero:boiler'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看到日志少了一页，还能再翻
+      - skill: 妙手
+        difficulty: hard
+        stakes: 阀门卡住了，蒸汽喷了你一脸
+      - skill: 聆听
+        difficulty: regular
+        stakes: 你听见甲板上有两个人往下走
+      - skill: 图书馆
+        difficulty: regular
+        stakes: 你看不懂轮机参数，但记住了船名
+
+  - id: watcher_office
+    name: 稽查室
+    goal: 从林稽查嘴里套出他和船的关系
+    clocks:
+      - id: warrant
+        label: 搜查令
+        max: 4
+        on_zero: confrontation
+    clues:
+      - id: clue_lin_deal
+        text: 抽屉里有林稽查和船东的合影
+      - id: clue_lin_cut
+        text: 同一份分成字据上，林稽查的私章缺了一角
+      - id: clue_warrant
+        text: 搜查令早就签好，只等一个替罪羊
+    exits:
+      - id: confront
+        to: confrontation
+        when: 'clue:clue_lin_deal || flag:lin_deal'
+      - id: back_dock
+        to: dock
+        when: 'always'
+      - id: warrant_served
+        to: confrontation
+        when: 'clock_zero:warrant'
+    checks:
+      - skill: 话术
+        difficulty: regular
+        stakes: 他打起官腔，但没有赶你走
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你看不出他藏着什么，但他开始看表
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看到抽屉锁着，还能再找机会
+      - skill: 妙手
+        difficulty: hard
+        stakes: 抽屉开了一条缝，他的茶碗却翻了
+
+  - id: confrontation
+    name: 船头对峙
+    goal: 在林稽查登船前决定：揭穿、救人，还是让雾把一切吞掉
+    clocks:
+      - id: siren
+        label: 巡捕房的汽笛
+        max: 4
+        on_zero: ending_silence
+    clues:
+      - id: clue_lin_deal_final
+        text: 林稽查承认分成，但他说自己只是拿钱
+      - id: clue_missing_alive
+        text: 失踪者被藏在压水舱里，还活着
+      - id: clue_escape_boat
+        text: 船尾系着一条没人看管的小艇
+    exits:
+      - id: truth
+        to: ending_truth
+        when: 'flag:expose_lin'
+      - id: escape
+        to: ending_escape
+        when: 'flag:save_witness'
+      - id: silence
+        to: ending_silence
+        when: 'clock_zero:siren'
+      - id: stalemate
+        to: ending_silence
+        when: 'always'
+    checks:
+      - skill: 话术
+        difficulty: hard
+        stakes: 他把话题推回你身上，但还没叫人
+        on_fumble:
+          ending: ending_silence
+          text: 林稽查把手铐扔到你脚边。雾里没有人再听你说话。
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你看出他在算时间，却没算清他等谁
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你看见小艇，但雾太厚，看不清缆绳
+      - attribute: 敏捷
+        difficulty: regular
+        stakes: 你躲开挥来的警棍，甲板更滑了
+
+  - id: ending_truth
+    name: 雾散之后
+    ending: true
+    goal: 把船上的活人和账一起交到该去的地方
+
+  - id: ending_escape
+    name: 顺流而下
+    ending: true
+    goal: 带着证人驶进雾里
+
+  - id: ending_silence
+    name: 雾吞了船
+    ending: true
+    goal: 让这一夜没有目击者

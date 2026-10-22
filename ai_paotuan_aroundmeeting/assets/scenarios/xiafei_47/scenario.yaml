@@ -1,0 +1,356 @@
+# 《霞飞路 47 号》· 三幕分支版
+# 说明：剧本不写目标值；检定目标 = 角色技能值（D-05）。
+# 流程：门厅 → 楼梯间 / 地下室 → 401 / 402 → 镜室 → 阁楼对峙 → 三种结局。
+id: xiafei_47
+version: 0.1.0
+title: 霞飞路 47 号
+subtitle: 1935 · 上海法租界 · 心理恐怖 / 密室
+minutes: 25-35
+rating: 16+
+party_max: 4
+opening: |
+  霞飞路 47 号，一栋待拆的公寓。楼道里没有灯，只有一股潮湿的檀香味。
+  四楼的门虚掩着，门缝里透出一线黄光；门内有人用指甲轻轻划木头。
+  台阶一共四十七级，最上面一级比下面窄。
+
+content_scope:
+  era: 1935 年秋 · 上海法租界霞飞路
+  genre: 心理恐怖 / 密室 / 悬疑
+  rating: 16+
+  allowed: [试探, 欺骗, 潜入, 威胁, 有限的暴力, 超自然暗示]
+  forbidden: [性内容, 未成年人伤害, 虐待细节, 真实人物影射, 现代科技, 出戏元话语]
+  intent: 玩家应在剧本的时空与题材内行事
+
+cast:
+  - id: human
+    kind: human
+    name: Joe
+    goal: 取回铁盒，并活着离开这栋楼
+    tags: [侦查, 心理学, 记者]
+  - id: bp_wen
+    kind: bp
+    name: 温医生
+    goal: 找到自己失踪的病人
+    secret: 他给四楼的住户开过安眠药
+    tags: [冷静, 内疚, 观察]
+    quip: 药能让人睡着，楼不能。
+    switch_trigger: 看到病人留下的东西，他会失去冷静。
+  - id: bp_ayu
+    kind: bp
+    name: 阿玉
+    goal: 找回母亲留在楼里的照片
+    secret: 她小时候在这里住过
+    tags: [敏感, 执拗, 怀旧]
+    quip: 我记得这楼梯，小时候它没这么长。
+    switch_trigger: 有人要烧掉照片或铁盒，她会扑上去。
+
+npcs:
+  - id: npc_luo
+    name: 罗伯
+    goal: 守住楼里的秘密，等拆迁队来
+    secret: 四楼的住户早已死绝
+    tags: [迟缓, 虔诚, 隐瞒]
+
+scenes:
+  - id: entrance
+    name: 门厅
+    goal: 找到上四楼的路，弄清这栋楼为什么还留着灯
+    clocks:
+      - id: rain
+        label: 门外的雨
+        max: 5
+        on_zero: stairwell
+    clues:
+      - id: clue_brass_plate
+        text: 信箱上「401」的铜牌被人反着装
+      - id: clue_wet_steps
+        text: 楼梯上有往上走的湿脚印，没有下来的
+      - id: clue_incense
+        text: 檀香味从四楼往下沉，像刚点过
+    exits:
+      - id: stairs
+        to: stairwell
+        when: 'always'
+      - id: cellar
+        to: basement
+        when: 'flag:basement_door'
+      - id: rain_rises
+        to: stairwell
+        when: 'clock_zero:rain'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看见铜牌反装，门厅的灯闪了一下
+      - skill: 聆听
+        difficulty: regular
+        stakes: 你听见楼上有人在数数，但数到一半停了
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你说不清这股熟悉感从哪来，但还能往上走
+      - skill: 话术
+        difficulty: regular
+        stakes: 罗伯只说「四楼没人」，但没有拦你
+
+  - id: stairwell
+    name: 楼梯间
+    goal: 找到四楼那扇门，确认楼里还有谁
+    clocks:
+      - id: lights
+        label: 楼道灯
+        max: 4
+        on_zero: room_401
+    clues:
+      - id: clue_scratches
+        text: 墙上有一排指甲划出的竖线，正好四十七道
+      - id: clue_counting
+        text: 楼上有人在数「三十八、三十九」，声音很轻
+      - id: clue_small_shoe
+        text: 台阶上放着一只很小的旧皮鞋，鞋尖朝墙
+    exits:
+      - id: room_401
+        to: room_401
+        when: 'always'
+      - id: room_402
+        to: room_402
+        when: 'flag:heard_song'
+      - id: cellar
+        to: basement
+        when: 'flag:basement_door'
+      - id: lights_out
+        to: room_401
+        when: 'clock_zero:lights'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只数到三十几道划痕，灯又暗了一格
+      - skill: 聆听
+        difficulty: regular
+        stakes: 数数声停了，楼上传来一声门响
+      - skill: 潜行
+        difficulty: regular
+        stakes: 你踩裂一块木阶，四楼的门缝亮了一下
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你开始分不清数数声是楼上还是脑子里
+
+  - id: room_401
+    name: 401 室
+    goal: 找到房东说的铁盒，确认这里住过谁
+    clocks:
+      - id: incense
+        label: 檀香
+        max: 4
+        on_zero: mirror_room
+    clues:
+      - id: clue_iron_box
+        text: 床底有一只上了锁的铁盒，锁扣是新的
+      - id: clue_old_photo
+        text: 墙上的全家福里，每个人的脸都被烟头烫过
+      - id: clue_medicine
+        text: 桌上摆着七只空药瓶，标签都朝下
+    exits:
+      - id: room_402
+        to: room_402
+        when: 'clue:clue_old_photo'
+      - id: mirror
+        to: mirror_room
+        when: 'clue:clue_mirror'
+      - id: stairs
+        to: stairwell
+        when: 'always'
+      - id: incense_thick
+        to: mirror_room
+        when: 'clock_zero:incense'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看见铁盒一角，床底比看上去更深
+      - skill: 妙手
+        difficulty: regular
+        stakes: 锁没开，铁盒里却响了一声
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你盯着照片太久，忘了自己为什么上来
+      - skill: 图书馆
+        difficulty: regular
+        stakes: 你认出药瓶上的年份，却想不起药名
+
+  - id: room_402
+    name: 402 室
+    goal: 找到另一个住户留下的记录，弄明白四楼发生过什么
+    clocks:
+      - id: music
+        label: 留声机
+        max: 4
+        on_zero: mirror_room
+    clues:
+      - id: clue_gramophone
+        text: 留声机唱针还在转，唱片却已经裂了
+      - id: clue_letter
+        text: 一封没寄出的信写着「他们把门从外面钉上」
+      - id: clue_mirror
+        text: 衣柜镜背刻着一行小字：「不要看第四十七级」
+    exits:
+      - id: mirror
+        to: mirror_room
+        when: 'clue:clue_mirror'
+      - id: room_401
+        to: room_401
+        when: 'always'
+      - id: music_stops
+        to: mirror_room
+        when: 'clock_zero:music'
+    checks:
+      - skill: 聆听
+        difficulty: regular
+        stakes: 唱片跳了一下，隔壁传来椅子拖动的声音
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只找到半封信，衣柜门还关着
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你听见自己的呼吸变了，但还能继续
+      - skill: 妙手
+        difficulty: regular
+        stakes: 唱针划出一道白痕，音乐停了
+
+  - id: basement
+    name: 地下室
+    goal: 找到楼里真正的入口，或者确认这里没有活人
+    clocks:
+      - id: water
+        label: 涨水
+        max: 4
+        on_zero: mirror_room
+    clues:
+      - id: clue_boiler
+        text: 锅炉早就冷了，炉膛里却有一双新脚印
+      - id: clue_trunk
+        text: 一只樟木箱里叠着四十七件小孩衣服
+      - id: clue_names
+        text: 墙上刻满名字，最后一个名字被反复描深
+    exits:
+      - id: mirror
+        to: mirror_room
+        when: 'clue:clue_trunk'
+      - id: entrance
+        to: entrance
+        when: 'always'
+      - id: water_rises
+        to: mirror_room
+        when: 'clock_zero:water'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看见箱子一角，水已经漫过鞋面
+      - skill: 聆听
+        difficulty: regular
+        stakes: 水声里夹着有人在楼上走动的节奏
+      - skill: 图书馆
+        difficulty: regular
+        stakes: 你认出名字的排列方式，却不敢念出来
+      - skill: 潜行
+        difficulty: regular
+        stakes: 你踢翻一只铁桶，楼上的脚步停了
+
+  - id: mirror_room
+    name: 镜室
+    goal: 找到第四十七级台阶后面的东西
+    clocks:
+      - id: candle
+        label: 蜡烛
+        max: 4
+        on_zero: confrontation
+    clues:
+      - id: clue_mirror_writing
+        text: 镜面上有人用指灰写了一个倒着的「救」字
+      - id: clue_hidden_door
+        text: 镜子后面有风，墙纸边缘被刀划开过
+      - id: clue_newspaper
+        text: 一张旧报纸写着「霞飞路 47 号火灾，无人生还」
+    exits:
+      - id: confront
+        to: confrontation
+        when: 'clue:clue_hidden_door || flag:open_mirror'
+      - id: stairs
+        to: stairwell
+        when: 'always'
+      - id: candle_dies
+        to: confrontation
+        when: 'clock_zero:candle'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看见镜子后的风，墙纸还没撕开
+      - skill: 聆听
+        difficulty: regular
+        stakes: 镜子后面有人呼吸，但声音和你一样
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你分不清镜里的人是不是自己，蜡烛短了一截
+        on_fumble:
+          ending: ending_silence
+          text: 你在镜子里看见自己先转过身去。蜡烛灭了。
+      - skill: 妙手
+        difficulty: regular
+        stakes: 镜框松了，却发出很大的响声
+
+  - id: confrontation
+    name: 阁楼对峙
+    goal: 在天亮前决定：面对真相、带走铁盒，还是让这栋楼继续沉默
+    clocks:
+      - id: dawn
+        label: 天亮
+        max: 4
+        on_zero: ending_silence
+    clues:
+      - id: clue_truth
+        text: 罗伯承认四楼的人是他锁在里面的
+      - id: clue_box_truth
+        text: 铁盒里不是钱，是四十七份没有报案的死亡记录
+      - id: clue_way_out
+        text: 阁楼天窗通向后巷的防火梯
+    exits:
+      - id: truth
+        to: ending_truth
+        when: 'flag:face_truth'
+      - id: escape
+        to: ending_escape
+        when: 'flag:take_box'
+      - id: silence
+        to: ending_silence
+        when: 'clock_zero:dawn'
+      - id: stalemate
+        to: ending_silence
+        when: 'always'
+    checks:
+      - skill: 话术
+        difficulty: hard
+        stakes: 罗伯把话咽回去，但天窗还开着
+        on_fumble:
+          ending: ending_silence
+          text: 罗伯把天窗闩死。天亮时，楼里只剩你的脚步声。
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你看清他在害怕，却不知道他怕什么
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你看见铁盒，但罗伯挡在中间
+      - attribute: 敏捷
+        difficulty: regular
+        stakes: 你躲开挥来的拐杖，蜡烛灭了一根
+
+  - id: ending_truth
+    name: 天亮以后
+    ending: true
+    goal: 把四十七个名字带出这栋楼
+
+  - id: ending_escape
+    name: 防火梯
+    ending: true
+    goal: 带着铁盒从后巷离开
+
+  - id: ending_silence
+    name: 第四十七级
+    ending: true
+    goal: 让这栋楼在拆迁前保持沉默

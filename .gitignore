@@ -1,0 +1,12 @@
+# Tooling / IDE / local session files
+.dsh/
+.idea/
+.vscode/
+*.iml
+
+# Design, research and script documents (kept local; not part of the app source)
+PRD/
+SE/
+剧本/
+/AI*.md
+/GitHub_AI*.md

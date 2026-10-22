@@ -1,0 +1,40 @@
+name: ai_paotuan_aroundmeeting
+description: "一人成团（Party of AIs）— 一个真人，混在一群 AI 玩家里跑团。"
+publish_to: 'none'
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.11.5
+
+# 依赖原则（SE §10.1）：能用纯 Dart 就不引插件；平台插件 ≤ 3，且每个都要有兜底。
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # 状态管理（D-09 = A）
+  flutter_riverpod: '>=2.5.0 <4.0.0'
+  # 路由（D-10 = A）
+  go_router: '>=14.0.0 <17.0.0'
+  # 剧本 YAML（D-19 = A）
+  yaml: '>=3.1.0 <4.0.0'
+  # LLM HTTP（D-15 = B）
+  dio: '>=5.4.0 <6.0.0'
+
+  # 平台能力（SE §2.6，共 3 个插件）
+  path_provider: '>=2.1.0 <3.0.0'
+  flutter_secure_storage: '>=9.0.0 <11.0.0'
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/scenarios/dinner_hale/
+    - assets/scenarios/mist_dock/
+    - assets/scenarios/paramount_last_dance/
+    - assets/scenarios/xiafei_47/

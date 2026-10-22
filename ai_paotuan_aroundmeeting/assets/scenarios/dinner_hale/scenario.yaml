@@ -1,0 +1,365 @@
+# 《顾先生的晚宴》· 四幕分支版（SE §4.12）
+# 说明：剧本不写目标值；检定目标 = 角色技能值（D-05）。
+# 流程：门廊 → 餐厅 / 厨房 / 街口 → 书房 / 地下室 → 客厅对峙 → 三种结局。
+id: dinner_hale
+version: 0.2.0
+title: 顾先生的晚宴
+subtitle: 1935 · 上海法租界 · 悬疑 / 社交
+minutes: 25-35
+rating: 16+
+# 桌上人数上限（不含 KP）：本剧本按 2–4 人局设计，AI 玩家默认 1 个。
+party_max: 4
+# 固定开场白：开局直接播这段，不走 LLM，保证每局开头一致。
+opening: |
+  1935 年深秋，法租界。顾公馆的门廊亮着一盏鎏金门灯，风把梧桐碎叶扫过砖红地毯。
+  门内传来餐具轻碰的声响，又很快静下去。顾先生站在灯下，指尖夹着一张烫金名片。
+  晚宴邀请函的边角已经被汗浸软，门廊里没有第三个人。
+
+content_scope:
+  era: 1935 年秋 · 上海法租界
+  genre: 悬疑 / 社交 / 心理恐怖
+  rating: 16+
+  allowed: [谈判, 试探, 欺骗, 潜入, 威胁, 有限的暴力]
+  forbidden: [性内容, 未成年人伤害, 虐待细节, 真实人物影射, 现代科技, 出戏元话语]
+  intent: 玩家应在剧本的时空与题材内行事
+
+cast:
+  - id: human
+    kind: human
+    name: Joe
+    goal: 套出顾先生与失踪案的关系
+    tags: [话术, 心理学, 记者]
+  - id: bp_stella
+    kind: bp
+    name: Stella
+    goal: 让顾先生接受邀请
+    secret: 她欠顾先生钱
+    tags: [体面, 精明, 怕被拒绝]
+    quip: 这盏灯比我家客厅还亮，可惜照不出人的良心。
+    switch_trigger: 被当众揭短时，她会突然改口，站到更强势的一边。
+  - id: bp_chen
+    kind: bp
+    name: 老陈
+    goal: 拿回能敲诈顾先生的账本
+    secret: 他知道地下室
+    tags: [谨慎, 贪财, 记仇]
+    quip: 账本不会自己长脚，可人会。
+    switch_trigger: 只要有人提到巡捕房，他就想先脱身。
+
+npcs:
+  - id: npc_gu
+    name: 顾先生
+    goal: 保护秘密、维持体面
+    secret: 地下室关着失踪的账房先生
+    tags: [礼貌, 警惕]
+
+scenes:
+  - id: porch
+    name: 门廊
+    goal: 让顾先生接受晚宴邀请，或找到别的入口
+    fixed_actions:
+      - 我把邀请函递过去，说只想讨一杯酒
+      - 我退后半步，先看看门廊里还有没有别人
+      - 我提起刚才离开的那位客人，看他怎么接
+    clocks:
+      - id: gu_patience
+        label: 顾先生的耐心
+        max: 5
+        on_zero: street
+    clues:
+      - id: clue_recent_meeting
+        text: 他刚结束一场会面，茶还温着
+      - id: clue_cuff_mud
+        text: 他袖口有泥，像刚从地窖上来
+      - id: clue_half_card
+        text: 他指间半张名片，另一半被撕走
+    exits:
+      - id: invited
+        to: dining_room
+        when: 'flag:gu_accepted_invite'
+      - id: service_door
+        to: kitchen
+        when: 'flag:seen_service_door'
+      - id: refused
+        to: street
+        when: 'clock_zero:gu_patience'
+      - id: walk_away
+        to: street
+        when: 'always'
+    checks:
+      - skill: 话术
+        difficulty: regular
+        stakes: 他礼貌拒绝，但还愿意听你说完；你还有下一次开口的机会
+        on_fumble:
+          ending: ending_silence
+          text: 顾先生把门关上。今晚不会再有人替你开门。
+      - skill: 心理学
+        difficulty: regular
+        stakes: 只看到一点犹豫，但话头还在；他不会立刻关门
+      - skill: 侦查
+        difficulty: regular
+        stakes: 这次没看清袖口的泥，可以再看一次
+      - skill: 聆听
+        difficulty: regular
+        stakes: 门里的脚步声停了，但门没有上锁
+
+  - id: dining_room
+    name: 餐厅
+    goal: 在晚宴上拿到进入书房或地下室的理由
+    clocks:
+      - id: gu_guard
+        label: 顾先生的体面
+        max: 5
+        on_zero: confrontation
+    clues:
+      - id: clue_guest_list
+        text: 宾客名单上有一个被墨水涂掉的名字
+      - id: clue_basement_key
+        text: 一把黄铜钥匙压在餐巾下
+      - id: clue_ledger_smell
+        text: 书房方向飘来旧账本的霉味
+    exits:
+      - id: study_invite
+        to: study
+        when: 'flag:gu_invites_study'
+      - id: kitchen_route
+        to: kitchen
+        when: 'flag:staff_distracted'
+      - id: cellar_route
+        to: cellar
+        when: 'flag:cellar_route'
+      - id: back_to_porch
+        to: porch
+        when: 'always'
+      - id: lose_face
+        to: confrontation
+        when: 'clock_zero:gu_guard'
+    checks:
+      - skill: 话术
+        difficulty: regular
+        stakes: 他岔开话题，但席面还撑得住；你还能再敬一杯
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你看不出他在怕什么，但他暂时不会离席
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看到钥匙的一角，可以再找机会确认
+      - skill: 妙手
+        difficulty: hard
+        stakes: 你碰倒了酒杯，侍者走过来；钥匙还在原处
+
+  - id: kitchen
+    name: 厨房
+    goal: 从佣人口中问出地下室的入口
+    clocks:
+      - id: cook_nerves
+        label: 厨娘的神经过
+        max: 4
+        on_zero: cellar
+    clues:
+      - id: clue_food_tray
+        text: 一份冷掉的饭正往地下室送
+      - id: clue_burnt_letter
+        text: 灶膛里没烧完的信角写着「账房」
+      - id: clue_back_gate
+        text: 后门通往一条没有灯的小巷
+    exits:
+      - id: cellar_route
+        to: cellar
+        when: 'flag:cellar_route'
+      - id: back_to_dining
+        to: dining_room
+        when: 'always'
+      - id: cook_runs
+        to: cellar
+        when: 'clock_zero:cook_nerves'
+    checks:
+      - skill: 话术
+        difficulty: regular
+        stakes: 厨娘闭口不谈，但把饭盒留在了灶台上
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你只看出她在害怕，没问出怕谁
+      - skill: 聆听
+        difficulty: regular
+        stakes: 你听见楼下有铁链响，但不确定方向
+      - skill: 潜行
+        difficulty: regular
+        stakes: 你踩到一块松动的砖，厨房里静了一瞬
+
+  - id: study
+    name: 书房
+    goal: 找到账本或地窖钥匙
+    clocks:
+      - id: gu_return
+        label: 顾先生回书房
+        max: 4
+        on_zero: confrontation
+    clues:
+      - id: clue_ledger
+        text: 账本记着三笔没有收货人的款子
+      - id: clue_photo
+        text: 相框里顾先生身旁的人被剪掉了
+      - id: clue_safe
+        text: 保险柜的锁眼有新划痕
+    exits:
+      - id: cellar_route
+        to: cellar
+        when: 'flag:cellar_route'
+      - id: back_to_dining
+        to: dining_room
+        when: 'always'
+      - id: caught
+        to: confrontation
+        when: 'clock_zero:gu_return'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只翻到一叠空信封，但书房门还开着
+      - skill: 图书馆
+        difficulty: regular
+        stakes: 你认出账本式样，却想不起出处；还能再看一页
+      - skill: 妙手
+        difficulty: hard
+        stakes: 保险柜发出轻响，走廊里的脚步停了
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你看出照片被剪过，却猜不透为什么
+
+  - id: cellar
+    name: 地下室
+    goal: 确认地下室里关着谁，并决定是否放人
+    clocks:
+      - id: lamp_oil
+        label: 煤油灯
+        max: 4
+        on_zero: confrontation
+    clues:
+      - id: clue_prisoner
+        text: 账房先生还活着，被锁在煤堆后面
+      - id: clue_account_book
+        text: 真正的账本藏在一袋发霉的米里
+      - id: clue_medical_bag
+        text: 地上有一只沾着暗红污渍的医药箱
+    exits:
+      - id: confront
+        to: confrontation
+        when: 'clue:clue_prisoner'
+      - id: upstairs
+        to: study
+        when: 'always'
+      - id: lamp_dies
+        to: confrontation
+        when: 'clock_zero:lamp_oil'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看见煤堆在动，没看清后面的人
+      - skill: 聆听
+        difficulty: regular
+        stakes: 你听见呼吸声，但灯芯开始发黑
+      - skill: 话术
+        difficulty: hard
+        stakes: 里面的人不信你，但也没有喊人
+      - skill: 妙手
+        difficulty: regular
+        stakes: 锁没打开，反而发出更大的响声
+
+  - id: street
+    name: 街口
+    goal: 从公馆外找到重新进去的路，或者及时离开
+    clocks:
+      - id: night_watch
+        label: 巡捕的夜哨
+        max: 4
+        on_zero: ending_silence
+    clues:
+      - id: clue_watcher
+        text: 对面车里有人一直没熄火
+      - id: clue_side_gate
+        text: 公馆后墙有一扇虚掩的铁门
+      - id: clue_ash
+        text: 门房刚烧过一叠带字的纸
+    exits:
+      - id: back_gate
+        to: kitchen
+        when: 'flag:back_gate'
+      - id: front_again
+        to: porch
+        when: 'always'
+      - id: patrol
+        to: ending_silence
+        when: 'clock_zero:night_watch'
+    checks:
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你只看到车尾灯，没看清车里的人
+      - skill: 潜行
+        difficulty: regular
+        stakes: 你踩进一摊积水，车里的人抬起头
+      - skill: 聆听
+        difficulty: regular
+        stakes: 你听见后墙有铁门响，但不敢确定
+      - skill: 话术
+        difficulty: regular
+        stakes: 门房不肯多说，只往巷子深处努了努嘴
+
+  - id: confrontation
+    name: 客厅对峙
+    goal: 在顾先生摊牌前决定：揭穿、交易，还是放人
+    clocks:
+      - id: gu_break
+        label: 顾先生的底线
+        max: 4
+        on_zero: ending_silence
+    clues:
+      - id: clue_confession
+        text: 顾先生承认地下室关着人
+      - id: clue_motive
+        text: 那三笔款子是用来堵失踪者家属的嘴
+      - id: clue_way_out
+        text: 后门钥匙就挂在壁炉上方
+    exits:
+      - id: truth
+        to: ending_truth
+        when: 'flag:expose_gu'
+      - id: escape
+        to: ending_escape
+        when: 'flag:help_escape'
+      - id: silence
+        to: ending_silence
+        when: 'clock_zero:gu_break'
+      - id: stalemate
+        to: ending_silence
+        when: 'always'
+    checks:
+      - skill: 话术
+        difficulty: hard
+        stakes: 他不认账，但也没有叫巡捕；你还能再逼一句
+        on_fumble:
+          ending: ending_silence
+          text: 顾先生按响了巡捕房的铃。这场晚宴到此为止。
+      - skill: 心理学
+        difficulty: regular
+        stakes: 你看出他在硬撑，却没找到他的软肋
+      - skill: 侦查
+        difficulty: regular
+        stakes: 你瞥见壁炉上的钥匙，但够不到
+      - attribute: 敏捷
+        difficulty: regular
+        stakes: 你躲开他挥来的手杖，场面更难看了
+
+  - id: ending_truth
+    name: 真相
+    ending: true
+    goal: 让所有人听见地下室里的人开口
+
+  - id: ending_escape
+    name: 夜遁
+    ending: true
+    goal: 带着能活命的人离开顾公馆
+
+  - id: ending_silence
+    name: 体面收场
+    ending: true
+    goal: 把秘密留在门里，各自走开
