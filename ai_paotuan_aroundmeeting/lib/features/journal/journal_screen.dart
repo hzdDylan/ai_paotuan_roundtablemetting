@@ -318,14 +318,6 @@ class _ArchiveEventRow extends StatelessWidget {
       case EventKind.sceneStart:
       case EventKind.checkDeclared:
         return const SizedBox.shrink();
-      case EventKind.interjection:
-        return const Padding(
-          padding: EdgeInsets.only(bottom: 6),
-          child: Text(
-            '……（插话）',
-            style: TextStyle(fontSize: 11, color: AppColors.blood),
-          ),
-        );
       default:
         final text = event.text;
         if (text.isEmpty) return const SizedBox.shrink();

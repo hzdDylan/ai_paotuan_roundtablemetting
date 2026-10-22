@@ -47,13 +47,6 @@ final class NarrationProduced extends TurnEvent {
   final String text;
 }
 
-/// 玩家插话（只在 BP/NPC 说话时允许，由 shell 先判 D-08）。
-final class InterjectRequested extends TurnEvent {
-  const InterjectRequested({required this.targetActorId});
-
-  final String targetActorId;
-}
-
 /// 本拍失败。
 final class BeatFailed extends TurnEvent {
   const BeatFailed({required this.code, this.message = ''});

@@ -49,18 +49,6 @@ final class ShowDice extends Effect {
   final Roll roll;
 }
 
-/// 取消进行中的 LLM 请求（插话时）。
-final class CancelInFlight extends Effect {
-  const CancelInFlight();
-}
-
-/// 记录一次插话（仅在记录页留 `……` 标记，不加旁白）。
-final class RecordInterjection extends Effect {
-  const RecordInterjection(this.targetActorId);
-
-  final String targetActorId;
-}
-
 /// 场景结算：判继续 / 转场 / 结局。
 final class EvaluateScene extends Effect {
   const EvaluateScene();

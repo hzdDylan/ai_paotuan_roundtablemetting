@@ -101,18 +101,6 @@ class TurnMachine {
           const <Effect>[],
         );
 
-      case InterjectRequested():
-        // D-08：只有 BP/NPC 正在说话（generating）时才能打断；
-        // KP 叙述与骰子结算阶段由 shell 直接禁用按钮。
-        if (state.phase != BeatPhase.generating) return _ignore(state);
-        return TurnTransition(
-          state.copyWith(phase: BeatPhase.interrupted),
-          <Effect>[
-            const CancelInFlight(),
-            RecordInterjection(event.targetActorId),
-          ],
-        );
-
       case BeatFailed():
         return TurnTransition(
           state.copyWith(phase: BeatPhase.failed, failureCode: event.code),

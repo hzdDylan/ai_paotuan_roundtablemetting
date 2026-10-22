@@ -21,7 +21,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
       lines: [
         '你是一个真人，桌上还有 2–5 个 AI 玩家（BP，Bot Player：由 AI 扮演的跑团玩家，坐在你旁边一起冒险，不是 NPC）和 1 个守秘人（KP）。',
         '每拍由导演决定谁说话；BP 会按自己的目标行动，也会吐槽、拒绝、临时改主意。',
-        '你随时可以插话——但 KP 叙述和掷骰结算时不行。',
+        '你只在轮到自己时行动——KP 叙述和掷骰结算时不能打断。',
       ],
     ),
     _Page(

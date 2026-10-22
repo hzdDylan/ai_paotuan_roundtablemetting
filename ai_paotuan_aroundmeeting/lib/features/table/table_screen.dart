@@ -134,9 +134,6 @@ class _TableScreenState extends ConsumerState<TableScreen> {
                 _TopBar(
                   sceneName: state.sceneName,
                   partySize: state.partySize,
-                  canInterject: state.canInterject,
-                  interjectReason: state.interjectReason ?? '现在不能插话',
-                  onInterject: notifier.interject,
                   onBack: _leave,
                   onTranscript: _showTranscript,
                 ),
@@ -252,18 +249,12 @@ class _TopBar extends StatelessWidget {
   const _TopBar({
     required this.sceneName,
     required this.partySize,
-    required this.canInterject,
-    required this.interjectReason,
-    required this.onInterject,
     required this.onBack,
     required this.onTranscript,
   });
 
   final String sceneName;
   final int partySize;
-  final bool canInterject;
-  final String interjectReason;
-  final VoidCallback onInterject;
   final VoidCallback onBack;
   final VoidCallback onTranscript;
 
@@ -284,27 +275,6 @@ class _TopBar extends StatelessWidget {
             style: const TextStyle(fontSize: 12, color: AppColors.brass),
           ),
           const Spacer(),
-          Tooltip(
-            message: interjectReason,
-            child: OutlinedButton.icon(
-              onPressed: canInterject ? onInterject : null,
-              icon: const Icon(Icons.front_hand, size: 14),
-              label: const Text('插话', style: TextStyle(fontSize: 12)),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: canInterject
-                    ? AppColors.blood
-                    : AppColors.inkMuted,
-                side: BorderSide(
-                  color: canInterject
-                      ? AppColors.blood.withValues(alpha: 0.7)
-                      : const Color(0x33FFFFFF),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                minimumSize: const Size(0, 32),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-            ),
-          ),
           IconButton(
             tooltip: '记录',
             onPressed: onTranscript,

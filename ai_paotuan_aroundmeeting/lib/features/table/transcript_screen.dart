@@ -73,14 +73,6 @@ class _EventRow extends StatelessWidget {
       );
     }
 
-    if (event.kind == EventKind.interjection) {
-      return const _Bubble(
-        accent: AppColors.blood,
-        speaker: '插话',
-        text: '……（你打断了对方）',
-      );
-    }
-
     if (event.kind == EventKind.inputAllowed ||
         event.kind == EventKind.inputRejected ||
         event.kind == EventKind.sessionStart ||

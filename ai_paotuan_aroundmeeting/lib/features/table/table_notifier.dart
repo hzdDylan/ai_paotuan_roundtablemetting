@@ -42,7 +42,6 @@ class TableState {
     this.busy = false,
     this.errorCode,
     this.errorMessage,
-    this.interjectReason = '还没开场',
     this.partySize = 4,
     this.inputRejected,
     this.ended = false,
@@ -63,7 +62,6 @@ class TableState {
   final bool busy;
   final String? errorCode;
   final String? errorMessage;
-  final String? interjectReason;
   final int partySize;
   final String? inputRejected;
   final bool ended;
@@ -74,7 +72,6 @@ class TableState {
   /// 由 LLM 根据当前场景生成的建议行动。
   final List<ActionSuggestion> suggestions;
 
-  bool get canInterject => interjectReason == null && busy;
   bool get awaitingInput => status == TableStatus.awaitingInput;
 
   TableState copyWith({
@@ -89,7 +86,6 @@ class TableState {
     bool? busy,
     Object? errorCode = _keep,
     Object? errorMessage = _keep,
-    Object? interjectReason = _keep,
     int? partySize,
     Object? inputRejected = _keep,
     bool? ended,
@@ -111,9 +107,6 @@ class TableState {
     errorMessage: identical(errorMessage, _keep)
         ? this.errorMessage
         : errorMessage as String?,
-    interjectReason: identical(interjectReason, _keep)
-        ? this.interjectReason
-        : interjectReason as String?,
     partySize: partySize ?? this.partySize,
     inputRejected: identical(inputRejected, _keep)
         ? this.inputRejected
@@ -167,7 +160,6 @@ class TableNotifier extends Notifier<TableState> {
   int _seq = 0;
   int _rollSeq = 0;
   DateTime _startedAt = DateTime.now();
-  CancelToken? _bpCancel;
 
   @override
   TableState build() => const TableState();
@@ -290,8 +282,8 @@ class TableNotifier extends Notifier<TableState> {
   Future<void> advance() async {
     if (state.busy || state.ended) return;
     state = state.copyWith(
+      status: TableStatus.playing,
       busy: true,
-      interjectReason: 'AI 正在说话，可以插话',
       inputRejected: null,
     );
     try {
@@ -384,32 +376,6 @@ class TableNotifier extends Notifier<TableState> {
     }
   }
 
-  /// 插话：只在 BP/NPC 说话时可用（D-08）。
-  Future<void> interject() async {
-    if (!state.canInterject) return;
-    final target = state.speaker;
-    _bpCancel?.cancel('interjected');
-    _bpCancel = null;
-
-    await _append(<GameEvent>[
-      _event(
-        EventKind.interjection,
-        const Audience.public(),
-        actorId: 'human',
-        payload: <String, dynamic>{'target': target, 'phase': 'generating'},
-      ),
-    ]);
-
-    final cut = state.segment.isEmpty ? '' : '${state.segment}……';
-    state = state.copyWith(
-      status: TableStatus.awaitingInput,
-      busy: false,
-      speaker: '你',
-      segment: cut,
-      interjectReason: '轮到你了',
-    );
-  }
-
   /// 自动归档（D-24 / V-21：玩家不触发、不感知）。
   Future<ArchiveRecord?> endAndArchive({
     String endingId = 'auto',
@@ -450,7 +416,6 @@ class TableNotifier extends Notifier<TableState> {
       status: TableStatus.ended,
       ended: true,
       busy: false,
-      interjectReason: '本局已结束',
       segment: review.isEmpty ? null : review,
       speaker: review.isEmpty ? null : 'KP',
     );
@@ -626,11 +591,7 @@ class TableNotifier extends Notifier<TableState> {
     final def = scenario.actorById(actor.id);
     if (def == null) return;
 
-    state = state.copyWith(
-      busy: true,
-      interjectReason: '${actor.name} 正在说话，可插话',
-    );
-    _bpCancel = CancelToken();
+    state = state.copyWith(busy: true);
 
     final messages = _prompts.bpTurn(
       scenario: scenario,
@@ -645,7 +606,6 @@ class TableNotifier extends Notifier<TableState> {
     final result = await _client!.chatJson(
       model: _bpModel,
       messages: messages,
-      cancelToken: _bpCancel,
     );
 
     // 不做修复/重试调用（V-24）：一次请求不合法就停下，避免重复烧 token。
@@ -658,7 +618,6 @@ class TableNotifier extends Notifier<TableState> {
   }
 
   Future<void> _applyBpTurn(ActorRef actor, ActorTurn turn) async {
-    _bpCancel = null;
     await _emitSegment(actor.name, turn.speech);
     await _append(<GameEvent>[
       _event(
@@ -820,7 +779,7 @@ class TableNotifier extends Notifier<TableState> {
     final scenario = _scenario!;
     final scene = _scene!;
 
-    state = state.copyWith(busy: true, interjectReason: 'KP 正在叙述，不可打断');
+    state = state.copyWith(busy: true);
 
     final messages = _prompts.kpTurn(
       scenario: scenario,
@@ -1119,7 +1078,6 @@ class TableNotifier extends Notifier<TableState> {
       state = state.copyWith(
         status: TableStatus.awaitingInput,
         busy: false,
-        interjectReason: '轮到你了',
         suggestions: const <ActionSuggestion>[],
       );
       return;
@@ -1133,7 +1091,6 @@ class TableNotifier extends Notifier<TableState> {
       state = state.copyWith(
         status: TableStatus.awaitingInput,
         busy: false,
-        interjectReason: '轮到你了',
         suggestions: <ActionSuggestion>[
           for (final text in scene.fixedActions) ActionSuggestion(text: text),
         ],
@@ -1145,7 +1102,6 @@ class TableNotifier extends Notifier<TableState> {
     state = state.copyWith(
       status: TableStatus.playing,
       busy: true,
-      interjectReason: '正在整理可选行动',
       suggestions: const <ActionSuggestion>[],
     );
     final suggestions = await _askActionSuggestions(
@@ -1159,7 +1115,6 @@ class TableNotifier extends Notifier<TableState> {
     state = state.copyWith(
       status: TableStatus.awaitingInput,
       busy: false,
-      interjectReason: '轮到你了',
       suggestions: suggestions,
     );
   }
@@ -1196,7 +1151,6 @@ class TableNotifier extends Notifier<TableState> {
       busy: false,
       errorCode: code,
       errorMessage: message,
-      interjectReason: '出错了',
     );
   }
 

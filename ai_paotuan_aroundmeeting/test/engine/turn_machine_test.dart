@@ -81,46 +81,6 @@ void main() {
     expect(transition.effects.whereType<CallCheckDeclaration>(), isEmpty);
   });
 
-  test('插话只在 generating 生效（D-08）', () {
-    // 生成中：可以打断。
-    final generating = const BeatState(
-      phase: BeatPhase.generating,
-      actorId: 'bp_stella',
-    );
-    final allowed = machine.reduce(
-      generating,
-      const InterjectRequested(targetActorId: 'bp_stella'),
-    );
-    expect(allowed.state.phase, BeatPhase.interrupted);
-    expect(allowed.effects.whereType<CancelInFlight>(), hasLength(1));
-    expect(allowed.effects.whereType<RecordInterjection>(), hasLength(1));
-
-    // 骰子结算中：不可打断（状态不变、无效果）。
-    final rolling = BeatState(
-      phase: BeatPhase.rolling,
-      decl: const CheckDecl(
-        actorId: 'bp_stella',
-        skill: Skill.persuade,
-        difficulty: Difficulty.regular,
-      ),
-    );
-    final blocked = machine.reduce(
-      rolling,
-      const InterjectRequested(targetActorId: 'bp_stella'),
-    );
-    expect(blocked.state.phase, BeatPhase.rolling);
-    expect(blocked.effects, isEmpty);
-
-    // KP 叙述中：不可打断。
-    final narrating = const BeatState(phase: BeatPhase.narrating);
-    final blockedNarration = machine.reduce(
-      narrating,
-      const InterjectRequested(targetActorId: 'kp'),
-    );
-    expect(blockedNarration.state.phase, BeatPhase.narrating);
-    expect(blockedNarration.effects, isEmpty);
-  });
-
   test('乱序事件会被忽略（状态不变、无效果）', () {
     final state = const BeatState(phase: BeatPhase.generating);
     final transition = machine.reduce(state, const BeatFinished());

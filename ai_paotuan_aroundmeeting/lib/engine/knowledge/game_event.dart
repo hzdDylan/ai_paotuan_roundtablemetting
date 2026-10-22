@@ -11,7 +11,6 @@ abstract final class EventKind {
   static const roll = 'roll';
   static const checkResult = 'check_result';
   static const stateDelta = 'state_delta';
-  static const interjection = 'interjection';
   static const inputAllowed = 'input_allowed';
   static const inputRejected = 'input_rejected';
   static const sceneEnd = 'scene_end';

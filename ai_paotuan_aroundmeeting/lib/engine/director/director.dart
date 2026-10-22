@@ -69,7 +69,7 @@ class DirectorContext {
   final String humanId;
   final String? lastSpeakerId;
 
-  /// 玩家是否点了「该我了 / 插话」。
+  /// 玩家是否明确要求自己行动。
   final bool humanRequested;
 
   /// 上一拍是否是玩家且失败（用于「队友补位」）。

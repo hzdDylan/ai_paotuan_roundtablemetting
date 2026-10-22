@@ -14,7 +14,6 @@ enum BeatPhase {
   evaluating,
   transitioning,
   ending,
-  interrupted,
   failed,
 }
 
@@ -23,9 +22,6 @@ extension BeatPhaseInfo on BeatPhase {
       this != BeatPhase.idle &&
       this != BeatPhase.failed &&
       this != BeatPhase.ending;
-
-  /// 此时「插话」按钮是否可点（D-08：只有 BP/NPC 说话时可打断）。
-  bool get allowsInterject => this == BeatPhase.generating;
 }
 
 const Object _keep = Object();

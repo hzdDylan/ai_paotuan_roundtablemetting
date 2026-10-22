@@ -245,13 +245,6 @@ class Archiver {
           'actor': event.actorId,
           'quote': event.text,
         });
-      } else if (event.kind == EventKind.interjection) {
-        highlights.add({
-          'seq': event.seq,
-          'type': 'interjection',
-          'actor': event.actorId,
-          'quote': event.text,
-        });
       }
     }
     return highlights;
