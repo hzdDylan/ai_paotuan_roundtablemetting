@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:ai_paotuan_aroundmeeting/engine/archive/archiver.dart';
+import 'package:ai_paotuan_aroundmeeting/data/archive/archiver.dart';
+import 'package:ai_paotuan_aroundmeeting/data/scenario/scenario_parser.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/knowledge/audience.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/knowledge/game_event.dart';
+import 'package:ai_paotuan_aroundmeeting/engine/rules/character_rules.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/rules/character_sheet.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/rules/check.dart';
-import 'package:ai_paotuan_aroundmeeting/engine/rules/character_rules.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario.dart';
-import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario_parser.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../fakes.dart';

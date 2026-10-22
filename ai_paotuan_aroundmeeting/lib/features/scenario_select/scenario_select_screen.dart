@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/di.dart';
 import '../../app/theme.dart';
 import '../../engine/scenario/scenario.dart';
-import '../table/table_notifier.dart';
+import '../table/table_controller.dart';
 
 /// 选择剧本（PRD 05 §2.4）：只有两个入口。
 class ScenarioSelectScreen extends ConsumerWidget {

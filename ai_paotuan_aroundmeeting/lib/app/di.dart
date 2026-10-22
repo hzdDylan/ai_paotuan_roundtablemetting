@@ -1,15 +1,26 @@
 import 'dart:math' as math;
 
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../engine/archive/archiver.dart';
-import '../engine/moderation/moderation.dart';
+import '../application/ports/app_failure.dart';
+import '../application/ports/archive_repository.dart';
+import '../application/ports/clock.dart';
+import '../application/ports/connection_tester.dart';
+import '../application/ports/event_store.dart';
+import '../application/ports/keys.dart';
+import '../application/ports/llm_gateway.dart';
+import '../application/ports/scenario_repository.dart';
+import '../application/table/session_config.dart';
+import '../application/table/table_session_factory.dart';
+import '../data/llm/connection_tester_impl.dart';
+import '../data/llm/llm_gateway_impl.dart';
+import '../data/scenario/asset_scenario_repository.dart';
+import '../engine/archive/archive_record.dart';
+import '../engine/dice/dice.dart';
 import '../engine/rules/character_rules.dart';
 import '../engine/rules/character_sheet.dart';
 import '../engine/scenario/scenario.dart';
-import '../engine/scenario/scenario_parser.dart';
-import '../llm/action_suggester.dart';
+import '../llm/llm_client.dart';
 import '../platform/ports.dart';
 
 // ---------------------------------------------------------------------------
@@ -28,17 +39,64 @@ final secretStoreProvider = Provider<SecretPort>(
   (ref) => throw UnimplementedError('SecretPort 未注入'),
 );
 
+final eventStoreProvider = Provider<EventStore>(
+  (ref) => throw UnimplementedError('EventStore 未注入'),
+);
+
+final archiveRepositoryProvider = Provider<ArchiveRepository>(
+  (ref) => throw UnimplementedError('ArchiveRepository 未注入'),
+);
+
+final scenarioRepositoryProvider = Provider<ScenarioRepository>(
+  (ref) => const AssetScenarioRepository(paths: scenarioPaths),
+);
+
+final clockProvider = Provider<Clock>((ref) => const SystemClock());
+
+final rngProvider = Provider<RngPort>((ref) => SecureRng());
+
+final connectionTesterProvider = Provider<ConnectionTester>(
+  (ref) => const LlmConnectionTester(),
+);
+
 /// 当前是否配好 key（首页状态条用）。
 final apiKeyProvider = FutureProvider<String?>((ref) async {
   final secret = ref.watch(secretStoreProvider);
   return secret.read(SecretKeys.apiKey);
 });
 
+/// 当前设置下可用的 LLM 网关；没有 key 时抛出 E_NO_KEY。
+final llmGatewayProvider = FutureProvider<LlmGateway>((ref) async {
+  final settings = ref.watch(settingsProvider);
+  final secret = ref.watch(secretStoreProvider);
+  final key = await secret.read(SecretKeys.apiKey);
+  if (key == null || key.trim().isEmpty) {
+    throw const AppFailure('E_NO_KEY', '先在设置里填 API key');
+  }
+  return LlmGatewayImpl(
+    client: LlmClient(baseUrl: settings.baseUrl, apiKey: key.trim()),
+    kpModel: settings.kpModel,
+    bpModel: settings.bpModel,
+  );
+});
+
+/// 一局会话工厂：组合 LLM、存储、归档、时钟与随机源。
+final tableSessionFactoryProvider = FutureProvider<TableSessionFactory>((
+  ref,
+) async {
+  final llm = await ref.watch(llmGatewayProvider.future);
+  return TableSessionFactory(
+    llm: llm,
+    eventStore: ref.watch(eventStoreProvider),
+    archives: ref.watch(archiveRepositoryProvider),
+    clock: ref.watch(clockProvider),
+    rng: ref.watch(rngProvider),
+  );
+});
+
 /// 本机归档列表（记忆回廊）。
 final archiveListProvider = FutureProvider<List<ArchiveRecord>>((ref) async {
-  final dirs = ref.watch(fileDirsProvider);
-  final root = await dirs.appData();
-  return Archiver(root).list();
+  return ref.watch(archiveRepositoryProvider).list();
 });
 
 // ---------------------------------------------------------------------------
@@ -56,13 +114,7 @@ const Map<String, String> scenarioPaths = <String, String>{
 };
 
 final scenarioCatalogProvider = FutureProvider<List<Scenario>>((ref) async {
-  final loaded = await Future.wait(
-    scenarioPaths.values.map((path) async {
-      final source = await rootBundle.loadString(path);
-      return parseScenario(source);
-    }),
-  );
-  return List<Scenario>.unmodifiable(loaded);
+  return ref.watch(scenarioRepositoryProvider).loadCatalog();
 });
 
 /// 当前选中的剧本 id；切换剧本只改这里。
@@ -106,17 +158,6 @@ final scenarioProvider = FutureProvider<Scenario>((ref) async {
     orElse: () => all.first,
   );
 });
-
-/// 审核器依赖当前剧本的 content_scope。
-final moderatorProvider = Provider<LocalModerator>((ref) {
-  final scenario = ref.watch(scenarioProvider).valueOrNull;
-  return LocalModerator(scope: scenario?.contentScope ?? const ContentScope());
-});
-
-/// 玩家行动建议的生成器；测试可覆盖为固定返回。
-final actionSuggesterProvider = Provider<ActionSuggester>(
-  (ref) => suggestActions,
-);
 
 // ---------------------------------------------------------------------------
 // 角色卡草稿
@@ -312,19 +353,6 @@ class SettingsNotifier extends Notifier<AppSettings> {
 // ---------------------------------------------------------------------------
 // 对局设置（AI 玩家数量与名字）
 // ---------------------------------------------------------------------------
-
-class SessionConfig {
-  const SessionConfig({this.bpCount = 1, this.bpNames = const <String>[]});
-
-  final int bpCount;
-  final List<String> bpNames;
-
-  SessionConfig copyWith({int? bpCount, List<String>? bpNames}) =>
-      SessionConfig(
-        bpCount: bpCount ?? this.bpCount,
-        bpNames: bpNames ?? this.bpNames,
-      );
-}
 
 final sessionConfigProvider =
     NotifierProvider<SessionConfigNotifier, SessionConfig>(

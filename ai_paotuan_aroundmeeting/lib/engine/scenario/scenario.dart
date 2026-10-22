@@ -1,6 +1,6 @@
 import '../moderation/moderation.dart';
-import '../rules/check.dart';
 import '../rules/character_rules.dart';
+import '../rules/check.dart';
 
 /// 剧本里的一个行动者声明（玩家 / BP）。
 class ScenarioActor {

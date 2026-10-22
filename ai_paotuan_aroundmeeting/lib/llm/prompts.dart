@@ -121,7 +121,7 @@ NPC：${npcs.isEmpty ? '无' : npcs}
     required Scenario scenario,
     required SceneDef scene,
     required List<Roll> rolls,
-    required String actorName,
+    required Map<String, String> actorNames,
     required List<GameEvent> events,
     String fatalConsequence = '',
   }) {
@@ -152,8 +152,9 @@ $fatalBlock
       ..writeln()
       ..writeln('这一拍共 ${rolls.length} 个动作，逐个检定：');
     for (final roll in rolls) {
+      final name = actorNames[roll.actorId] ?? roll.actorId;
       user.writeln(
-        '- $actorName 的【${roll.label}】检定：'
+        '- $name 的【${roll.label}】检定：'
         '基础 ${roll.baseSkill}，${roll.difficulty.label}难度目标 ${roll.target}，'
         '骰值 ${roll.die}，结果「${roll.outcome.label}」。'
         '${roll.stakes.isEmpty ? '' : '失败代价：${roll.stakes}'}',

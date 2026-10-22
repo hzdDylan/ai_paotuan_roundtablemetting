@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme.dart';
 import '../../engine/knowledge/game_event.dart';
-import 'table_notifier.dart';
+import 'table_controller.dart';
 
 /// 对话历史（半模态）：不跳路由，避免回来时对局被重置。
 class TranscriptSheet extends ConsumerWidget {

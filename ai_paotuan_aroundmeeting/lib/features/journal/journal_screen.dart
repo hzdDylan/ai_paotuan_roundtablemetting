@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/di.dart';
 import '../../app/theme.dart';
-import '../../engine/archive/archiver.dart';
+import '../../engine/archive/archive_record.dart';
 import '../../engine/knowledge/game_event.dart';
 
 /// 记忆回廊（PRD 05 §5）：本机归档，只读、不导出。
@@ -114,8 +114,7 @@ class JournalScreen extends ConsumerWidget {
   }
 
   Future<void> _deleteArchive(WidgetRef ref, ArchiveRecord record) async {
-    final root = await ref.read(fileDirsProvider).appData();
-    await Archiver(root).delete(record.sessionId);
+    await ref.read(archiveRepositoryProvider).delete(record.sessionId);
     ref.invalidate(archiveListProvider);
   }
 
@@ -124,8 +123,9 @@ class JournalScreen extends ConsumerWidget {
     WidgetRef ref,
     ArchiveRecord record,
   ) async {
-    final root = await ref.read(fileDirsProvider).appData();
-    final events = await Archiver(root).readEvents(record.path);
+    final events = await ref
+        .read(archiveRepositoryProvider)
+        .readEvents(record.path);
     if (!context.mounted) return;
 
     await showModalBottomSheet<void>(

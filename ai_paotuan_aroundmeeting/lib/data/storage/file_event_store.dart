@@ -1,33 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../knowledge/game_event.dart';
-
-/// 事件存储（D-22 = D：纯文件 NDJSON）。
-abstract interface class EventStore {
-  Future<void> appendAll(String sessionId, List<GameEvent> events);
-
-  Future<List<GameEvent>> readAll(String sessionId);
-
-  Future<List<String>> listSessionIds();
-}
-
-/// 内存实现（测试用）。
-class MemoryEventStore implements EventStore {
-  final Map<String, List<GameEvent>> _sessions = <String, List<GameEvent>>{};
-
-  @override
-  Future<void> appendAll(String sessionId, List<GameEvent> events) async {
-    _sessions.putIfAbsent(sessionId, () => <GameEvent>[]).addAll(events);
-  }
-
-  @override
-  Future<List<GameEvent>> readAll(String sessionId) async =>
-      List<GameEvent>.unmodifiable(_sessions[sessionId] ?? const <GameEvent>[]);
-
-  @override
-  Future<List<String>> listSessionIds() async => _sessions.keys.toList();
-}
+import '../../application/ports/event_store.dart';
+import '../../engine/knowledge/game_event.dart';
 
 /// 文件实现：`{root}/sessions/{id}/events.ndjson`，追加写。
 class FileEventStore implements EventStore {

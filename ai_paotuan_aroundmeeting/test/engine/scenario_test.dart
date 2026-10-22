@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import 'package:ai_paotuan_aroundmeeting/data/scenario/scenario_parser.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/moderation/moderation.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/rules/character_rules.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/rules/check.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario_lint.dart';
-import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario_parser.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/scenario/scene_flow.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,13 +1,13 @@
 import 'dart:io';
 
 import 'package:ai_paotuan_aroundmeeting/app/di.dart';
+import 'package:ai_paotuan_aroundmeeting/data/archive/archiver.dart';
+import 'package:ai_paotuan_aroundmeeting/data/archive/file_archive_repository.dart';
+import 'package:ai_paotuan_aroundmeeting/data/scenario/scenario_parser.dart';
+import 'package:ai_paotuan_aroundmeeting/data/storage/memory_event_store.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/knowledge/game_event.dart';
-import 'package:ai_paotuan_aroundmeeting/engine/rules/character_rules.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario.dart';
-import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario_parser.dart';
-import 'package:ai_paotuan_aroundmeeting/engine/turn/action_suggestion.dart';
-import 'package:ai_paotuan_aroundmeeting/features/table/table_notifier.dart';
-import 'package:ai_paotuan_aroundmeeting/platform/ports.dart';
+import 'package:ai_paotuan_aroundmeeting/features/table/table_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -25,29 +25,17 @@ void main() {
   test('固定开场后只轮到玩家，BP 不抢在玩家之前行动', () async {
     final temp = TempDirs();
     addTearDown(temp.dispose);
-    final secret = FakeSecret();
-    await secret.write(SecretKeys.apiKey, 'sk-test');
 
     final container = ProviderContainer(
       overrides: [
         fileDirsProvider.overrideWithValue(temp),
         settingsStoreProvider.overrideWithValue(FakeSettings()),
-        secretStoreProvider.overrideWithValue(secret),
+        secretStoreProvider.overrideWithValue(FakeSecret()),
         scenarioProvider.overrideWith((ref) async => scenario),
-        actionSuggesterProvider.overrideWithValue(
-          ({
-            required client,
-            required model,
-            required scenario,
-            required scene,
-            required character,
-            required events,
-            required revealedClues,
-            required clocks,
-          }) async => const <ActionSuggestion>[
-            ActionSuggestion(text: '我盯着他的袖口', skill: Skill.spotHidden),
-            ActionSuggestion(text: '我先把邀请函收好', attribute: Attribute.pow),
-          ],
+        llmGatewayProvider.overrideWith((ref) async => FakeLlmGateway()),
+        eventStoreProvider.overrideWithValue(MemoryEventStore()),
+        archiveRepositoryProvider.overrideWithValue(
+          FileArchiveRepository(Archiver(temp.root)),
         ),
       ],
     );

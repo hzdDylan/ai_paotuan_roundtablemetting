@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ai_paotuan_aroundmeeting/data/scenario/scenario_parser.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/knowledge/audience.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/knowledge/game_event.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/moderation/moderation.dart';
@@ -7,7 +8,6 @@ import 'package:ai_paotuan_aroundmeeting/engine/rules/character_rules.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/rules/character_sheet.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/rules/check.dart';
 import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario.dart';
-import 'package:ai_paotuan_aroundmeeting/engine/scenario/scenario_parser.dart';
 import 'package:ai_paotuan_aroundmeeting/llm/prompts.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -93,12 +93,13 @@ void main() {
           stakes: '他会拒绝',
         ),
       ],
-      actorName: 'Stella',
+      actorNames: const <String, String>{'bp_stella': 'Stella'},
       events: const <GameEvent>[],
     );
     final system = messages.first['content']!;
     expect(system, contains('不能修改'));
     expect(messages.last['content'], contains('骰值 81'));
+    expect(messages.last['content'], contains('Stella'));
     expect(messages.last['content'], contains('失败'));
   });
 
@@ -118,7 +119,7 @@ void main() {
           outcome: Outcome.fumble,
         ),
       ],
-      actorName: 'Joe',
+      actorNames: const <String, String>{'human': 'Joe'},
       events: const <GameEvent>[],
       fatalConsequence: '顾先生把门关上。',
     );

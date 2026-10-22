@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/di.dart';
 import '../../app/theme.dart';
+import '../../application/table/session_config.dart';
 import '../../engine/scenario/bp_names.dart';
 import '../../engine/scenario/scenario.dart';
 

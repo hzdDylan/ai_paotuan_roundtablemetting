@@ -1,45 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import '../knowledge/game_event.dart';
-import '../rules/check.dart';
-import '../rules/character_sheet.dart';
-import '../scenario/scenario.dart';
-
-/// 归档摘要（列表页用）。
-class ArchiveRecord {
-  const ArchiveRecord({
-    required this.sessionId,
-    required this.scenarioTitle,
-    required this.endingTitle,
-    required this.beatCount,
-    required this.partySize,
-    required this.endedAt,
-    required this.path,
-    this.oneLine = '',
-    this.lastRoll = '',
-    this.review = '',
-  });
-
-  final String sessionId;
-  final String scenarioTitle;
-  final String endingTitle;
-  final int beatCount;
-  final int partySize;
-  final DateTime endedAt;
-  final String path;
-
-  /// 结局一句话（取最后一拍叙述）。
-  final String oneLine;
-
-  /// 最后一骰的可读描述，如「话术 48 成功」。
-  final String lastRoll;
-
-  /// KP 对本局的复盘评价。
-  final String review;
-
-  bool get isValid => sessionId.isNotEmpty;
-}
+import '../../engine/archive/archive_record.dart';
+import '../../engine/knowledge/game_event.dart';
+import '../../engine/rules/character_sheet.dart';
+import '../../engine/rules/check.dart';
+import '../../engine/scenario/scenario.dart';
 
 /// 归档生成（D-23 = A：全量事件快照；D-24 = D：不导出）。
 class Archiver {

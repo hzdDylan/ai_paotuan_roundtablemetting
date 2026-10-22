@@ -8,6 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/di.dart';
 import 'app/router.dart';
 import 'app/theme.dart';
+import 'data/archive/archiver.dart';
+import 'data/archive/file_archive_repository.dart';
+import 'data/storage/file_event_store.dart';
 import 'platform/platform_impl.dart';
 
 Future<void> main() async {
@@ -29,6 +32,10 @@ Future<void> main() async {
         fileDirsProvider.overrideWithValue(dirs),
         settingsStoreProvider.overrideWithValue(settings),
         secretStoreProvider.overrideWithValue(const SecureStorageSecret()),
+        eventStoreProvider.overrideWithValue(FileEventStore(dataDir)),
+        archiveRepositoryProvider.overrideWithValue(
+          FileArchiveRepository(Archiver(dataDir)),
+        ),
       ],
       child: const PartyApp(),
     ),

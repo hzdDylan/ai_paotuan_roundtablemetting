@@ -114,7 +114,7 @@ KpTurn parseKpTurn(
 }
 
 CheckDecl? _parseDecl(
-  Map raw, {
+  Map<Object?, Object?> raw, {
   required Set<String> actorIds,
   required String humanId,
 }) {

@@ -1,9 +1,9 @@
 import 'package:yaml/yaml.dart';
 
-import '../moderation/moderation.dart';
-import '../rules/check.dart';
-import '../rules/character_rules.dart';
-import 'scenario.dart';
+import '../../engine/moderation/moderation.dart';
+import '../../engine/rules/character_rules.dart';
+import '../../engine/rules/check.dart';
+import '../../engine/scenario/scenario.dart';
 
 /// 解析剧本 YAML（D-19 = A，随包资源）。
 ///

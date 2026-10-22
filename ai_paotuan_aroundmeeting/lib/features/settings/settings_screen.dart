@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/di.dart';
 import '../../app/theme.dart';
-import '../../llm/llm_client.dart';
-import '../../platform/ports.dart';
+import '../../application/ports/app_failure.dart';
+import '../../application/ports/keys.dart';
 
 enum _TestState { idle, testing, ok, failed }
 
@@ -73,15 +73,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     });
 
     final settings = ref.read(settingsProvider);
-    final client = LlmClient(baseUrl: settings.baseUrl, apiKey: key);
+    final tester = ref.read(connectionTesterProvider);
     try {
-      await client.ping(model: settings.kpModel);
+      await tester.ping(
+        baseUrl: settings.baseUrl,
+        apiKey: key,
+        model: settings.kpModel,
+      );
       if (!mounted) return;
       setState(() {
         _testState = _TestState.ok;
         _testMessage = '连通正常';
       });
-    } on LlmException catch (error) {
+    } on AppFailure catch (error) {
       if (!mounted) return;
       setState(() {
         _testState = _TestState.failed;

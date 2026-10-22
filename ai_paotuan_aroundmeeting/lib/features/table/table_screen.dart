@@ -10,7 +10,7 @@ import '../../engine/rules/check.dart';
 import '../../engine/turn/action_suggestion.dart';
 import '../../ui/widgets/parchment_panel.dart';
 import '../../ui/widgets/seat_avatar.dart';
-import 'table_notifier.dart';
+import 'table_controller.dart';
 import 'transcript_screen.dart';
 
 /// 跑团页（PRD 05 §4）：固定排版，不滚动。

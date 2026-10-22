@@ -121,7 +121,7 @@ class DirectorPick {
 /// 导演：只决定「谁来说话」，不参与演出（SE §3.2，D-04 = A）。
 class Director {
   /// 纯决策，不需要随机源：抖动已去掉，避免「轮流感」。
-  Director();
+  const Director();
 
   /// 返回 null 表示没有可选行动者（配置错误）。
   DirectorPick? pick(DirectorContext context) {
