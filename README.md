@@ -31,6 +31,20 @@
 
 4 个内置剧本：顾先生的晚宴、雾码头、百乐门最后一支舞、霞飞路 47 号。
 
+## 截图
+
+<p align="center">
+  <img src="ai_paotuan_aroundmeeting/docs/screenshots/01-home.jpg" width="250" />
+  <img src="ai_paotuan_aroundmeeting/docs/screenshots/05-table-action.jpg" width="250" />
+  <img src="ai_paotuan_aroundmeeting/docs/screenshots/08-journal.jpg" width="250" />
+</p>
+
+更多截图：[剧本选择](ai_paotuan_aroundmeeting/docs/screenshots/02-scenarios.jpg) ·
+[角色卡](ai_paotuan_aroundmeeting/docs/screenshots/03-character.jpg) ·
+[角色卡物品栏](ai_paotuan_aroundmeeting/docs/screenshots/04-character-items.jpg) ·
+[队友回应](ai_paotuan_aroundmeeting/docs/screenshots/06-bp-reply.jpg) ·
+[队友判定](ai_paotuan_aroundmeeting/docs/screenshots/07-bp-check-success.jpg)
+
 ## 核心亮点
 
 | 亮点 | 说明 |
